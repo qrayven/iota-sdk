@@ -22,7 +22,7 @@ async fn main() -> Result<()> {
     let client_options = ClientOptions::new().with_node(&std::env::var("NODE_URL").unwrap())?;
 
     let secret_manager =
-        MnemonicSecretManager::try_from_mnemonic(&std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
+        MnemonicSecretManager::try_from_mnemonic(std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
 
     let wallet = Wallet::builder()
         .with_secret_manager(SecretManager::Mnemonic(secret_manager))
@@ -60,20 +60,16 @@ async fn main() -> Result<()> {
     for _ in 0..1000 {
         let mut threads = Vec::new();
         for n in 0..10 {
-            let account_ = account.clone();
-            let address_ = *address.as_ref();
+            let account = account.clone();
+            let address = *address.as_ref();
 
             threads.push(async move {
                 tokio::spawn(async move {
                     // send transaction
-                    let outputs = vec![
-                        BasicOutputBuilder::new_with_amount(1_000_000)
-                            .add_unlock_condition(AddressUnlockCondition::new(address_))
-                            .finish_output(account_.client().get_token_supply().await?)?;
-                        // amount of outputs in the transaction (one additional output might be added for the remaining amount)
-                        1
-                    ];
-                    let transaction = account_.send(outputs, None).await?;
+                    let outputs = [BasicOutputBuilder::new_with_amount(1_000_000)
+                        .add_unlock_condition(AddressUnlockCondition::new(address))
+                        .finish_output(account.client().get_token_supply().await?)?];
+                    let transaction = account.send(outputs, None).await?;
                     println!(
                         "Transaction from thread {} sent: {}/transaction/{}",
                         n,

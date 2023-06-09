@@ -23,7 +23,7 @@ async fn main() -> Result<()> {
     let client_options = ClientOptions::new().with_node(&std::env::var("NODE_URL").unwrap())?;
 
     let secret_manager =
-        MnemonicSecretManager::try_from_mnemonic(&std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
+        MnemonicSecretManager::try_from_mnemonic(std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
 
     let wallet = Wallet::builder()
         .with_secret_manager(SecretManager::Mnemonic(secret_manager))
@@ -63,7 +63,7 @@ async fn main() -> Result<()> {
     println!("Addresses with balance: {}", addresses_with_unspent_outputs.len());
 
     // send transaction
-    let outputs = vec![SendAmountParams::new(
+    let outputs = [SendAmountParams::new(
         "rms1qpszqzadsym6wpppd6z037dvlejmjuke7s24hm95s9fg9vpua7vluaw60xu",
         1_000_000,
     )?];

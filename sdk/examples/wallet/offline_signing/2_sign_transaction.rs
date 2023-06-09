@@ -33,7 +33,7 @@ async fn main() -> Result<()> {
 
     // Setup Stronghold secret_manager
     let secret_manager = StrongholdSecretManager::builder()
-        .password(&std::env::var("STRONGHOLD_PASSWORD").unwrap())
+        .password(std::env::var("STRONGHOLD_PASSWORD").unwrap())
         .build("examples/wallet/offline_signing/offline_signing.stronghold")?;
 
     // Load snapshot file
@@ -88,7 +88,7 @@ fn read_prepared_transaction_from_file<P: AsRef<Path>>(
     file.read_to_string(&mut json)?;
 
     Ok(PreparedTransactionData::try_from_dto(
-        &serde_json::from_str::<PreparedTransactionDataDto>(&json)?,
+        serde_json::from_str::<PreparedTransactionDataDto>(&json)?,
         protocol_parameters,
     )?)
 }

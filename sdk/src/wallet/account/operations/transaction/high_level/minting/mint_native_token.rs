@@ -48,21 +48,18 @@ pub struct MintNativeTokenParamsDto {
     pub foundry_metadata: Option<String>,
 }
 
-impl TryFrom<&MintNativeTokenParamsDto> for MintNativeTokenParams {
+impl TryFrom<MintNativeTokenParamsDto> for MintNativeTokenParams {
     type Error = crate::wallet::Error;
 
-    fn try_from(value: &MintNativeTokenParamsDto) -> crate::wallet::Result<Self> {
+    fn try_from(value: MintNativeTokenParamsDto) -> crate::wallet::Result<Self> {
         Ok(Self {
-            alias_id: value.alias_id.as_ref().copied(),
-            circulating_supply: U256::try_from(&value.circulating_supply)
-                .map_err(|_| Error::InvalidField("circulating_supply"))?,
-            maximum_supply: U256::try_from(&value.maximum_supply).map_err(|_| Error::InvalidField("maximum_supply"))?,
-            foundry_metadata: match &value.foundry_metadata {
-                Some(metadata) => {
-                    Some(prefix_hex::decode(metadata).map_err(|_| Error::InvalidField("foundry_metadata"))?)
-                }
-                None => None,
-            },
+            alias_id: value.alias_id,
+            circulating_supply: value.circulating_supply,
+            maximum_supply: value.maximum_supply,
+            foundry_metadata: value
+                .foundry_metadata
+                .map(|metadata| prefix_hex::decode(metadata).map_err(|_| Error::InvalidField("foundry_metadata")))
+                .transpose()?,
         })
     }
 }
@@ -181,7 +178,7 @@ impl Account {
             );
             let token_id = TokenId::from(foundry_id);
 
-            let outputs = vec![
+            let outputs = [
                 new_alias_output_builder.finish_output(token_supply)?,
                 {
                     let mut foundry_builder = FoundryOutputBuilder::new_with_minimum_storage_deposit(

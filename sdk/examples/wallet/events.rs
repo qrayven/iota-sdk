@@ -25,7 +25,7 @@ async fn main() -> Result<()> {
     let client_options = ClientOptions::new().with_node(&std::env::var("NODE_URL").unwrap())?;
 
     let secret_manager =
-        MnemonicSecretManager::try_from_mnemonic(&std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
+        MnemonicSecretManager::try_from_mnemonic(std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
 
     let wallet = Wallet::builder()
         .with_secret_manager(SecretManager::Mnemonic(secret_manager))
@@ -35,7 +35,7 @@ async fn main() -> Result<()> {
         .await?;
 
     wallet
-        .listen(vec![], move |event| {
+        .listen([], move |event| {
             println!("Received an event {event:?}");
         })
         .await;
@@ -60,13 +60,11 @@ async fn main() -> Result<()> {
     println!("Balance: {balance:?}");
 
     // send transaction
-    let outputs = vec![
-        BasicOutputBuilder::new_with_amount(1_000_000)
-            .add_unlock_condition(AddressUnlockCondition::new(Address::try_from_bech32(
-                "rms1qpszqzadsym6wpppd6z037dvlejmjuke7s24hm95s9fg9vpua7vluaw60xu",
-            )?))
-            .finish_output(account.client().get_token_supply().await?)?,
-    ];
+    let outputs = [BasicOutputBuilder::new_with_amount(1_000_000)
+        .add_unlock_condition(AddressUnlockCondition::new(Address::try_from_bech32(
+            "rms1qpszqzadsym6wpppd6z037dvlejmjuke7s24hm95s9fg9vpua7vluaw60xu",
+        )?))
+        .finish_output(account.client().get_token_supply().await?)?];
 
     let transaction = account.send(outputs, None).await?;
     println!("Transaction sent: {}", transaction.transaction_id);
